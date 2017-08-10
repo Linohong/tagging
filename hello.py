@@ -29,17 +29,23 @@ def getInfo() :
         additional_dic[cNum][0] = act_1
         additional_dic[cNum][1].append([act_2, slot, value])
         
-    print(additional_dic)
 
 ''' 
-TOKENIZING PART
-INPUT AS A STRING  
+    TOKENIZING PART
+    INPUT AS A STRING  
 '''
-def insertTag (input, caseNum) : # dealing corpus by corpus
+def insertTag (f, input, caseNum) : # dealing corpus by corpus
+    if input == None :
+        return
+    
+    print(f)
+    print(input)
+
     list_of_tag = []
     back = -1
     tag_Num = input.count('%') # the number of tag in a corpus
     natural = ''
+
     
     for i in range(tag_Num) :
         # get necessary indexes
@@ -76,46 +82,48 @@ def insertTag (input, caseNum) : # dealing corpus by corpus
     MAIN STARTS HERE
 '''
 # make list for the corpus information
-all_corpus = []
-# read from the corpus excel file
-book = load_workbook ('corpus.xlsx')
-sheet = book.active
+files = ['1.xlsx', '2.xlsx', '3.xlsx', '4.xlsx', '5.xlsx', '6.xlsx', '7.xlsx', '8.xlsx'
+         , '9.xlsx', '10.xlsx', '11.xlsx', '12.xlsx', '13.xlsx', '14.xlsx', '15.xlsx', '16.xlsx', '17.xlsx'
+         , '18.xlsx']
+
+
 # write book 
 write_book = Workbook()
 write_sheet = write_book.active
 
+# additional information 
 getInfo()
-
+index = 1
 # get each input one by one
-caseNum = 0
-for row in sheet.iter_rows(min_row=2, min_col=3, max_row=81, max_col=7):
-    caseNum += 1
-    for cell in row:
-        input = cell.value 
-        # process
-        insertTag(input, caseNum)
-    
-# write to a new excel file
-row = ('Raw Corpus', 'Natural Form', 'Act', 'Slot', 'Value')
-write_sheet.append(row)
-
-cur_row = 2
-color_flag = 1
-for i in all_corpus :
-    leng = len(i[2])
-    for j in i[2] : 
-        row = (i[0], i[1], j[0], j[1], j[2])
-        write_sheet.append(row)
-        cur_row += 1 
-    
-    # write contents to a cell (when 1 line)
-    if ( leng == 0 ) : 
-        row = (i[0], i[1], '', '')
-        write_sheet.append(row)
-        cur_row += 1
-    else :
-        write_sheet.merge_cells('A' + str(cur_row-leng) + ':A' + str(cur_row-1))
-        write_sheet.merge_cells('B' + str(cur_row-leng) + ':B' + str(cur_row-1))
+for f in files : 
+    all_corpus = []
+# read from the corpus excel file
+    book = load_workbook(f)
+    sheet = book.active
+    caseNum = 0
+    for row in sheet.iter_rows(min_row=2, min_col=3, max_col=33):
+        caseNum += 1
+        for cell in row:
+            input = cell.value 
+            # process
+            insertTag(f, input, caseNum)
+        
+    # write to a new excel file
+    for i in all_corpus :
+        leng = len(i[2])
+        first_flag = 1
+        for j in i[2] :
+            if ( first_flag ) :  
+                row = (str(index), i[0], i[1], j[0], j[1], j[2])
+                first_flag = 0
+                index += 1 
+            else :
+                row = ('', '', '', j[0], j[1], j[2])
+        
+            write_sheet.append(row)
+        
+    # write_sheet.merge_cells('A' + str(cur_row-leng) + ':A' + str(cur_row-1))
+    # write_sheet.merge_cells('B' + str(cur_row-leng) + ':B' + str(cur_row-1))
 
 
 '''
@@ -135,6 +143,6 @@ for row in write_sheet.rows :
     for cell in row :
         cell.alignment = Alignment(horizontal="justify")
 
-write_book.save('tagging.xlsx')
+write_book.save('tagged_corpus.xlsx')
 
 
